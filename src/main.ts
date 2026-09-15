@@ -12,6 +12,14 @@ async function greet() {
   }
 }
 
+async function showClientId() {
+  const el = document.querySelector("#client-id");
+  if (!el) return;
+  // CLIENT_ID is read from src-tauri/.env by dotenvy on the Rust side.
+  const id = await invoke<string | null>("client_id");
+  el.textContent = id ?? "(not set)";
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   greetInputEl = document.querySelector("#greet-input");
   greetMsgEl = document.querySelector("#greet-msg");
@@ -19,4 +27,5 @@ window.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     greet();
   });
+  showClientId();
 });
