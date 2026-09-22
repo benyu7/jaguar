@@ -91,10 +91,6 @@ button {
   outline: none;
 }
 
-#greet-input {
-  margin-right: 5px;
-}
-
 .auth {
   margin: 1.5em 0;
 }
