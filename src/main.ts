@@ -1,14 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-async function showClientId() {
-  const el = document.querySelector("#client-id");
-  if (!el) return;
-  // CLIENT_ID is read from src-tauri/.env by dotenvy on the Rust side.
-  const id = await invoke<string | null>("client_id");
-  el.textContent = id ?? "(not set)";
-}
-
 type DevicePrompt = {
   user_code: string;
   verification_uri: string;
@@ -113,8 +105,6 @@ async function restoreSession() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  showClientId();
-
   document.querySelector("#sign-in")?.addEventListener("click", signIn);
   document.querySelector("#sign-out")?.addEventListener("click", signOut);
   document
