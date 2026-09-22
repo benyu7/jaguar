@@ -95,6 +95,61 @@ button {
   margin-right: 5px;
 }
 
+.auth {
+  margin: 1.5em 0;
+}
+
+button.github {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  color: #ffffff;
+  background-color: #1f2328;
+}
+
+button.github:hover {
+  background-color: #32383f;
+}
+
+button.github:active {
+  background-color: #14171a;
+}
+
+button.github:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.user-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 2em;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  margin: 0.2em 0 0.6em;
+  user-select: all;
+}
+
+.hint {
+  font-size: 0.875em;
+  opacity: 0.7;
+}
+
+#auth-signed-in {
+  align-items: center;
+  gap: 0.75em;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.auth-error {
+  color: #d1242f;
+  font-size: 0.875em;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
@@ -112,5 +167,23 @@ button {
   }
   button:active {
     background-color: #0f0f0f69;
+  }
+
+  /* Invert the GitHub button so it stays readable on the dark background. */
+  button.github {
+    color: #1f2328;
+    background-color: #f6f8fa;
+  }
+
+  button.github:hover {
+    background-color: #ffffff;
+  }
+
+  button.github:active {
+    background-color: #e6e8ea;
+  }
+
+  .auth-error {
+    color: #ff8182;
   }
 }
