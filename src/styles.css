@@ -23,6 +23,12 @@
   text-align: center;
 }
 
+.logo {
+  width: 160px;
+  height: 160px;
+  align-self: center;
+}
+
 .row {
   display: flex;
   justify-content: center;
