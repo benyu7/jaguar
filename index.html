@@ -17,21 +17,23 @@
           <p class="hint">Asking the GitHub CLI who you are…</p>
         </div>
 
-        <div id="auth-signed-in" class="row" hidden>
+        <div id="auth-signed-in" hidden>
           <img class="avatar" id="avatar" alt="" />
           <span id="who"></span>
         </div>
 
         <div id="auth-unavailable" hidden>
           <p class="auth-error" id="auth-error"></p>
-          <button type="button" id="retry">Try again</button>
+          <button type="button" class="secondary" id="retry">Try again</button>
         </div>
       </section>
 
       <section class="prs" id="prs" hidden>
         <div class="prs-head">
           <h2>Your open pull requests</h2>
-          <button type="button" id="refresh-prs">Refresh</button>
+          <button type="button" class="secondary outline" id="refresh-prs">
+            Refresh
+          </button>
         </div>
         <p class="hint" id="prs-status" hidden></p>
         <ul class="pr-list" id="pr-list"></ul>

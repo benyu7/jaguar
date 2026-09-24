@@ -1,51 +1,14 @@
+/* Pico supplies the element styling, the light/dark palette and the container,
+   so what is left here is only what is particular to this window. */
+@import "@picocss/pico/css/pico.min.css";
+
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  /* Greyscale only. Everything that used to carry a hue now separates itself
-     by weight, opacity or an edge instead. */
-  --fg: #0f0f0f;
-  --bg: #f6f6f6;
-  --surface: #ffffff;
-  --edge: #00000014;
-  --edge-strong: #00000059;
-  /* The button's hover state, which swaps foreground and background. */
-  --invert-fg: #f6f6f6;
-  --invert-bg: #0f0f0f;
-  --invert-bg-pressed: #333333;
-
-  color: var(--fg);
-  background-color: var(--bg);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fg: #f6f6f6;
-    --bg: #2f2f2f;
-    --surface: #0f0f0f98;
-    --edge: #ffffff1f;
-    --edge-strong: #ffffff73;
-    --invert-fg: #2f2f2f;
-    --invert-bg: #f6f6f6;
-    --invert-bg-pressed: #d2d2d2;
-  }
+  /* Pico's default spacing is generous for a page; this is a small window. */
+  --pico-font-size: 100%;
 }
 
 .container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
+  padding-top: 8vh;
 }
 
 /* Hairline down the centre of the window, behind the content. */
@@ -56,82 +19,30 @@
   left: 50%;
   width: 1px;
   transform: translateX(-50%);
-  background-color: #ffffff;
+  background-color: var(--pico-muted-border-color);
   z-index: -1;
   pointer-events: none;
 }
 
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-/* Links carry the text colour and announce themselves on hover instead. */
-a {
-  font-weight: 500;
-  color: inherit;
-  text-decoration: inherit;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: var(--fg);
-  background-color: var(--surface);
-  transition:
-    color 0.2s,
-    background-color 0.2s,
-    border-color 0.2s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  outline: none;
-}
-
-button {
-  cursor: pointer;
-}
-
-/* Hover swaps the two: the face takes the text colour, the label the face's.
-   Scoped past :disabled, which still matches :hover in most browsers. */
-button:not(:disabled):hover {
-  color: var(--invert-fg);
-  background-color: var(--invert-bg);
-  border-color: transparent;
-}
-
-/* Keyboard activation fires without :hover, so the press state repeats the
-   inversion rather than relying on the rule above having applied. */
-button:not(:disabled):active {
-  color: var(--invert-fg);
-  background-color: var(--invert-bg-pressed);
-  border-color: transparent;
-}
-
-button:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-
 .auth {
-  margin: 1.5em 0;
+  text-align: center;
+  margin-bottom: var(--pico-block-spacing-vertical);
+}
+
+.auth > * {
+  margin-bottom: 0;
 }
 
 .hint {
   font-size: 0.875em;
-  opacity: 0.7;
+  color: var(--pico-muted-color);
 }
 
 #auth-signed-in {
+  display: flex;
   align-items: center;
-  gap: 0.75em;
+  justify-content: center;
+  gap: 0.75rem;
 }
 
 .avatar {
@@ -140,53 +51,46 @@ button:disabled {
   border-radius: 50%;
 }
 
-/* Everything else on this panel is muted, so full strength and a heavier
-   weight are enough to mark the error without reaching for a colour. */
+/* The messages carry a "Run: gh auth login" line of their own. */
 .auth-error {
-  font-size: 0.875em;
-  font-weight: 500;
-  /* The messages carry a "Run: gh auth login" line of their own. */
   white-space: pre-line;
   max-width: 34em;
-  margin: 0 auto 1em;
-}
-
-/* The list reads as a column of text, so it opts out of the centred layout. */
-.prs {
-  width: min(42em, 100% - 2em);
-  margin: 0 auto 3em;
-  text-align: left;
+  margin: 0 auto 1rem;
+  color: var(--pico-del-color);
 }
 
 .prs-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 1em;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .prs-head h2 {
-  font-size: 1.1em;
+  font-size: 1.1rem;
   margin: 0;
 }
 
 #refresh-prs {
-  padding: 0.35em 0.9em;
-  font-size: 0.875em;
+  width: auto;
+  margin: 0;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.875rem;
 }
 
 .pr-list {
   list-style: none;
-  margin: 0.75em 0 0;
+  margin: 0;
   padding: 0;
 }
 
 .pr {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 0 0.6em;
-  padding: 0.75em 0;
-  border-top: 1px solid var(--edge);
+  gap: 0 0.6rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--pico-muted-border-color);
 }
 
 .pr-title {
@@ -195,16 +99,16 @@ button:disabled {
 
 .pr-meta {
   grid-column: 1 / -1;
-  font-size: 0.8125em;
-  opacity: 0.7;
+  font-size: 0.8125rem;
+  color: var(--pico-muted-color);
 }
 
 .pr-draft {
   align-self: center;
-  font-size: 0.75em;
+  font-size: 0.75rem;
   font-weight: 500;
-  padding: 0.1em 0.6em;
+  padding: 0.1rem 0.6rem;
   border-radius: 999px;
-  border: 1px solid var(--edge-strong);
-  opacity: 0.7;
+  border: 1px solid var(--pico-muted-border-color);
+  color: var(--pico-muted-color);
 }
