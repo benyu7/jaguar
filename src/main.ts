@@ -179,9 +179,18 @@ async function signIn() {
   }
 }
 
+async function signOut() {
+  await invoke("sign_out");
+  document.querySelector("#pr-list")?.replaceChildren();
+  showPrStatus(null);
+  showAuthError(null);
+  showAuth("signed-out");
+}
+
 async function restoreSession() {
-  // The token lives in the Rust process, so it survives a webview reload even
-  // though it does not survive a restart.
+  // The token lives in the Rust process, backed by the OS credential store, so
+  // this recovers the session across both a webview reload and a restart. It
+  // returns null if the token has since been revoked.
   try {
     const user = await invoke<User | null>("current_user");
     if (user) showUser(user);
@@ -193,6 +202,7 @@ async function restoreSession() {
 
 window.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#sign-in")?.addEventListener("click", signIn);
+  document.querySelector("#sign-out")?.addEventListener("click", signOut);
   document
     .querySelector("#open-github")
     ?.addEventListener("click", openVerificationUri);

@@ -14,3 +14,8 @@ A Tauri desktop app in vanilla HTML, CSS and TypeScript.
 
 ## Details
 - Only Windows, MacOS, Linux
+- The GitHub access token is kept in the OS credential store (Credential Manager
+  on Windows, Keychain on macOS, Secret Service on Linux) under `jaguar` /
+  `github-access-token`, so the sign-in survives a restart. "Sign out" deletes
+  it. If no credential store is available the app still runs — it just asks you
+  to sign in each time.

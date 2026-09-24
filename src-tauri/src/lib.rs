@@ -1,5 +1,6 @@
 mod github_auth;
 mod pull_requests;
+mod token_store;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

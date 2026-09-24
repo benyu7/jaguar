@@ -3,8 +3,9 @@
 //! The device flow is the only GitHub OAuth App flow a desktop app can use
 //! without shipping a client secret: we send our public client ID, GitHub hands
 //! back a short user code, the user approves it in a browser, and we poll until
-//! GitHub returns an access token. The token is held in memory only, so signing
-//! in again is required after a restart.
+//! GitHub returns an access token. The token is then handed to [`token_store`],
+//! which keeps it in the operating system's own secret store, so a restart
+//! picks the session back up instead of asking the user to sign in again.
 
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
@@ -12,11 +13,14 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
+use crate::token_store;
+
 const DEVICE_CODE_URL: &str = "https://github.com/login/device/code";
 const ACCESS_TOKEN_URL: &str = "https://github.com/login/oauth/access_token";
 const USER_URL: &str = "https://api.github.com/user";
 const SCOPE: &str = "read:user";
 const GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:device_code";
+const LOCK_POISONED: &str = "Sign-in state is unusable; restart the app.";
 
 /// GitHub's reply to the device code request. `device_code` is the half the
 /// user never sees and is deliberately kept on the Rust side.
@@ -66,7 +70,10 @@ impl Auth {
                 .build()
                 .expect("could not build an HTTP client"),
             pending: Mutex::new(None),
-            token: Mutex::new(None),
+            // Whatever the last run left behind. It is not validated here —
+            // `current_user` does that on startup and discards it if GitHub has
+            // since revoked it.
+            token: Mutex::new(token_store::load()),
         }
     }
 
@@ -76,13 +83,31 @@ impl Auth {
         Ok(self
             .token
             .lock()
-            .map_err(|_| "Sign-in state is unusable; restart the app.".to_string())?
+            .map_err(|_| LOCK_POISONED.to_string())?
             .clone())
     }
 
     /// The shared HTTP client, so callers inherit the user agent GitHub wants.
     pub fn http(&self) -> reqwest::Client {
         self.http.clone()
+    }
+
+    /// Hold on to a freshly issued token, here and on disk.
+    fn remember(&self, token: String) -> Result<(), String> {
+        token_store::save(&token);
+        *self.token.lock().map_err(|_| LOCK_POISONED.to_string())? = Some(token);
+        Ok(())
+    }
+
+    /// Drop the session everywhere, so a restart does not resurrect it.
+    fn forget(&self) {
+        token_store::clear();
+        if let Ok(mut token) = self.token.lock() {
+            *token = None;
+        }
+        if let Ok(mut pending) = self.pending.lock() {
+            *pending = None;
+        }
     }
 }
 
@@ -127,7 +152,7 @@ pub async fn start_device_auth(state: State<'_, Auth>) -> Result<DevicePrompt, S
     *state
         .pending
         .lock()
-        .map_err(|_| "Sign-in state is unusable; restart the app.".to_string())? = Some(code);
+        .map_err(|_| LOCK_POISONED.to_string())? = Some(code);
 
     Ok(prompt)
 }
@@ -140,7 +165,7 @@ pub async fn complete_device_auth(state: State<'_, Auth>) -> Result<User, String
         let mut slot = state
             .pending
             .lock()
-            .map_err(|_| "Sign-in state is unusable; restart the app.".to_string())?;
+            .map_err(|_| LOCK_POISONED.to_string())?;
         slot.take()
     }
     .ok_or("No sign-in is in progress.")?;
@@ -190,45 +215,42 @@ pub async fn complete_device_auth(state: State<'_, Auth>) -> Result<User, String
         }
     };
 
-    let user = fetch_user(&http, &token).await?;
+    let user = fetch_user(&http, &token)
+        .await?
+        .ok_or("GitHub rejected the token it had just issued.")?;
 
-    *state
-        .token
-        .lock()
-        .map_err(|_| "Sign-in state is unusable; restart the app.".to_string())? = Some(token);
+    state.remember(token)?;
 
     Ok(user)
 }
 
 /// Who is signed in, if anyone. Lets the UI recover its state across a webview
-/// reload, which happens on every hot reload during development.
+/// reload, and is where a token restored from the keyring gets checked: if the
+/// user revoked it since the last run, we drop it and report nobody home.
 #[tauri::command]
 pub async fn current_user(state: State<'_, Auth>) -> Result<Option<User>, String> {
-    let token = {
-        let slot = state
-            .token
-            .lock()
-            .map_err(|_| "Sign-in state is unusable; restart the app.".to_string())?;
-        slot.clone()
+    let Some(token) = state.token()? else {
+        return Ok(None);
     };
 
-    match token {
-        Some(token) => fetch_user(&state.http.clone(), &token).await.map(Some),
-        None => Ok(None),
+    match fetch_user(&state.http(), &token).await? {
+        Some(user) => Ok(Some(user)),
+        None => {
+            state.forget();
+            Ok(None)
+        }
     }
 }
 
 #[tauri::command]
 pub fn sign_out(state: State<'_, Auth>) {
-    if let Ok(mut token) = state.token.lock() {
-        *token = None;
-    }
-    if let Ok(mut pending) = state.pending.lock() {
-        *pending = None;
-    }
+    state.forget();
 }
 
-async fn fetch_user(http: &reqwest::Client, token: &str) -> Result<User, String> {
+/// `Ok(None)` means GitHub refused the token — revoked, expired, or for an app
+/// the user has since removed. That is a fact about the session, not a failure,
+/// so it is not an `Err`.
+async fn fetch_user(http: &reqwest::Client, token: &str) -> Result<Option<User>, String> {
     let response = http
         .get(USER_URL)
         .header("Accept", "application/vnd.github+json")
@@ -236,6 +258,10 @@ async fn fetch_user(http: &reqwest::Client, token: &str) -> Result<User, String>
         .send()
         .await
         .map_err(|e| format!("Could not reach GitHub: {e}"))?;
+
+    if response.status() == reqwest::StatusCode::UNAUTHORIZED {
+        return Ok(None);
+    }
 
     if !response.status().is_success() {
         return Err(format!(
@@ -247,5 +273,6 @@ async fn fetch_user(http: &reqwest::Client, token: &str) -> Result<User, String>
     response
         .json()
         .await
+        .map(Some)
         .map_err(|e| format!("Unexpected response from GitHub: {e}"))
 }
