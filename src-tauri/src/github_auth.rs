@@ -18,7 +18,12 @@ use crate::token_store;
 const DEVICE_CODE_URL: &str = "https://github.com/login/device/code";
 const ACCESS_TOKEN_URL: &str = "https://github.com/login/oauth/access_token";
 const USER_URL: &str = "https://api.github.com/user";
-const SCOPE: &str = "read:user";
+/// `repo` is what makes private repositories visible to the search API. GitHub
+/// OAuth apps have no read-only equivalent — the narrower `public_repo` is
+/// public-only — so listing private pull requests costs full repository access.
+const SCOPE: &str = "read:user repo";
+/// The half of [`SCOPE`] a stored token must still carry to be worth keeping.
+const REQUIRED_SCOPE: &str = "repo";
 const GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:device_code";
 const LOCK_POISONED: &str = "Sign-in state is unusable; restart the app.";
 
@@ -217,7 +222,7 @@ pub async fn complete_device_auth(state: State<'_, Auth>) -> Result<User, String
 
     let user = fetch_user(&http, &token)
         .await?
-        .ok_or("GitHub rejected the token it had just issued.")?;
+        .ok_or("GitHub would not accept the token it had just issued.")?;
 
     state.remember(token)?;
 
@@ -247,9 +252,9 @@ pub fn sign_out(state: State<'_, Auth>) {
     state.forget();
 }
 
-/// `Ok(None)` means GitHub refused the token — revoked, expired, or for an app
-/// the user has since removed. That is a fact about the session, not a failure,
-/// so it is not an `Err`.
+/// `Ok(None)` means the token is no longer usable — revoked, expired, or issued
+/// under a narrower scope than the app now needs. All three are facts about the
+/// session rather than failures, so none of them is an `Err`.
 async fn fetch_user(http: &reqwest::Client, token: &str) -> Result<Option<User>, String> {
     let response = http
         .get(USER_URL)
@@ -270,9 +275,28 @@ async fn fetch_user(http: &reqwest::Client, token: &str) -> Result<Option<User>,
         ));
     }
 
+    if !scopes_are_sufficient(response.headers()) {
+        eprintln!("the stored token predates the {REQUIRED_SCOPE} scope; signing out");
+        return Ok(None);
+    }
+
     response
         .json()
         .await
         .map(Some)
         .map_err(|e| format!("Unexpected response from GitHub: {e}"))
+}
+
+/// Whether the token still carries [`REQUIRED_SCOPE`], judged from the
+/// `X-OAuth-Scopes` header GitHub attaches to every REST response.
+///
+/// A token saved before the app asked for `repo` authenticates perfectly well
+/// but silently sees no private repositories, so it has to be retired rather
+/// than trusted. When the header is missing we cannot tell, and assuming the
+/// worst would strand the user in a sign-in loop, so we let the token through.
+fn scopes_are_sufficient(headers: &reqwest::header::HeaderMap) -> bool {
+    let Some(granted) = headers.get("x-oauth-scopes").and_then(|v| v.to_str().ok()) else {
+        return true;
+    };
+    granted.split(',').any(|scope| scope.trim() == REQUIRED_SCOPE)
 }

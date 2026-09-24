@@ -4,6 +4,9 @@
 //! search API, which is the only way to reach across every repository in one
 //! call. `author:@me` resolves to whoever the token belongs to, so we never
 //! have to send the login ourselves.
+//!
+//! Search returns private repositories as well, provided the token carries the
+//! `repo` scope — see `SCOPE` in [`crate::github_auth`].
 
 use serde::{Deserialize, Serialize};
 use tauri::State;
