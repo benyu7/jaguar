@@ -32,7 +32,15 @@ function showAuth(view: AuthView) {
 function showAuthError(message: string | null) {
   const el = document.querySelector<HTMLElement>("#auth-error");
   if (!el) return;
-  el.textContent = message ?? "";
+
+  // The messages carry a "Run: gh auth login" line of their own, and nothing
+  // here preserves newlines, so the breaks have to be real elements.
+  const lines = (message ?? "").split("\n");
+  el.replaceChildren(
+    ...lines.flatMap((line, i) =>
+      i === 0 ? [line] : [document.createElement("br"), line],
+    ),
+  );
   el.hidden = message === null;
 }
 
@@ -75,41 +83,47 @@ function relativeTime(timestamp: string): string {
   return format.format(Math.round(seconds), "second");
 }
 
-function pullRequestItem(pr: PullRequest): HTMLLIElement {
-  const item = document.createElement("li");
-  item.className = "pr";
+function pullRequestRow(pr: PullRequest): HTMLTableRowElement {
+  const row = document.createElement("tr");
+  const title = document.createElement("td");
 
   // A plain href would navigate the webview itself, so the click handler sends
   // it to the real browser instead; the href is still there so the link reads
   // as one and shows its target on hover.
   const link = document.createElement("a");
-  link.className = "pr-title";
   link.href = pr.url;
   link.textContent = pr.title;
   link.addEventListener("click", (event) => {
     event.preventDefault();
     openUrl(pr.url).catch(() => showPrStatus("Could not open a browser."));
   });
-  item.append(link);
+  title.append(link);
 
   if (pr.draft) {
-    const draft = document.createElement("span");
-    draft.className = "pr-draft";
+    // Pico gives <mark> a padded, highlighted face — a badge without a class.
+    const draft = document.createElement("mark");
     draft.textContent = "Draft";
-    item.append(draft);
+    title.append(" ", draft);
   }
 
-  const meta = document.createElement("span");
-  meta.className = "pr-meta";
-  meta.textContent = `${pr.repository} #${pr.number} · updated ${relativeTime(pr.updated_at)}`;
-  item.append(meta);
+  const meta = document.createElement("small");
+  meta.textContent = `${pr.repository} #${pr.number}`;
+  title.append(document.createElement("br"), meta);
+  row.append(title);
 
-  return item;
+  const updated = document.createElement("td");
+  const age = document.createElement("small");
+  age.textContent = relativeTime(pr.updated_at);
+  updated.append(age);
+  row.append(updated);
+
+  return row;
 }
 
 async function loadPullRequests() {
   const section = document.querySelector<HTMLElement>("#prs");
-  const list = document.querySelector<HTMLUListElement>("#pr-list");
+  const table = document.querySelector<HTMLTableElement>("#pr-table");
+  const list = document.querySelector<HTMLTableSectionElement>("#pr-list");
   const refresh = document.querySelector<HTMLButtonElement>("#refresh-prs");
   if (!section || !list) return;
 
@@ -119,10 +133,13 @@ async function loadPullRequests() {
 
   try {
     const prs = await invoke<PullRequest[]>("list_my_pull_requests");
-    list.replaceChildren(...prs.map(pullRequestItem));
+    list.replaceChildren(...prs.map(pullRequestRow));
+    // A lone header row over nothing reads as a fault rather than an empty list.
+    if (table) table.hidden = prs.length === 0;
     showPrStatus(prs.length === 0 ? "No open pull requests." : null);
   } catch (error) {
     list.replaceChildren();
+    if (table) table.hidden = true;
     showPrStatus(String(error));
   } finally {
     if (refresh) refresh.disabled = false;

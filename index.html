@@ -23,20 +23,40 @@
         </div>
 
         <div id="auth-unavailable" hidden>
-          <p class="auth-error" id="auth-error"></p>
+          <p id="auth-error"></p>
           <button type="button" class="secondary" id="retry">Try again</button>
         </div>
       </section>
 
-      <section class="prs" id="prs" hidden>
-        <div class="prs-head">
-          <h2>Your open pull requests</h2>
-          <button type="button" class="secondary outline" id="refresh-prs">
-            Refresh
-          </button>
-        </div>
+      <section id="prs" hidden>
+        <!-- Pico's nav is the heading-left/action-right row, and it gives a
+             button inside `nav li` the compact padding and no bottom margin. -->
+        <nav>
+          <ul>
+            <li><h2>Your open pull requests</h2></li>
+          </ul>
+          <ul>
+            <li>
+              <button type="button" class="secondary outline" id="refresh-prs">
+                Refresh
+              </button>
+            </li>
+          </ul>
+        </nav>
+
         <p class="hint" id="prs-status" hidden></p>
-        <ul class="pr-list" id="pr-list"></ul>
+
+        <!-- A table rather than a list: Pico rules the rows and aligns the
+             columns without any styling of ours. -->
+        <table id="pr-table" hidden>
+          <thead>
+            <tr>
+              <th scope="col">Pull request</th>
+              <th scope="col">Updated</th>
+            </tr>
+          </thead>
+          <tbody id="pr-list"></tbody>
+        </table>
       </section>
     </main>
   </body>
