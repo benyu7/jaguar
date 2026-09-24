@@ -96,34 +96,9 @@ button {
   margin: 1.5em 0;
 }
 
-button.github {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6em;
-  color: #ffffff;
-  background-color: #1f2328;
-}
-
-button.github:hover {
-  background-color: #32383f;
-}
-
-button.github:active {
-  background-color: #14171a;
-}
-
-button.github:disabled {
+button:disabled {
   cursor: default;
   opacity: 0.6;
-}
-
-.user-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 2em;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  margin: 0.2em 0 0.6em;
-  user-select: all;
 }
 
 .hint {
@@ -142,29 +117,13 @@ button.github:disabled {
   border-radius: 50%;
 }
 
-/* A button that carries no weight of its own, next to the signed-in name. */
-button.link {
-  padding: 0;
-  font-size: 0.875em;
-  background: none;
-  box-shadow: none;
-  border-color: transparent;
-  opacity: 0.7;
-}
-
-button.link:hover {
-  border-color: transparent;
-  text-decoration: underline;
-  opacity: 1;
-}
-
-button.link:active {
-  background: none;
-}
-
 .auth-error {
   color: #d1242f;
   font-size: 0.875em;
+  /* The messages carry a "Run: gh auth login" line of their own. */
+  white-space: pre-line;
+  max-width: 34em;
+  margin: 0 auto 1em;
 }
 
 /* The list reads as a column of text, so it opts out of the centred layout. */
@@ -246,20 +205,6 @@ button.link:active {
   }
   button:active {
     background-color: #0f0f0f69;
-  }
-
-  /* Invert the GitHub button so it stays readable on the dark background. */
-  button.github {
-    color: #1f2328;
-    background-color: #f6f8fa;
-  }
-
-  button.github:hover {
-    background-color: #ffffff;
-  }
-
-  button.github:active {
-    background-color: #e6e8ea;
   }
 
   .auth-error {

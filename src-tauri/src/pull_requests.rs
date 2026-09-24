@@ -6,12 +6,12 @@
 //! have to send the login ourselves.
 //!
 //! Search returns private repositories as well, provided the token carries the
-//! `repo` scope — see `SCOPE` in [`crate::github_auth`].
+//! `repo` scope — see `REQUIRED_SCOPE` in [`crate::session`].
 
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
-use crate::github_auth::Auth;
+use crate::session::Session;
 
 const SEARCH_URL: &str = "https://api.github.com/search/issues";
 const QUERY: &str = "is:pr is:open archived:false author:@me";
@@ -48,8 +48,8 @@ pub struct PullRequest {
 }
 
 #[tauri::command]
-pub async fn list_my_pull_requests(state: State<'_, Auth>) -> Result<Vec<PullRequest>, String> {
-    let token = state.token()?.ok_or("Sign in to see your pull requests.")?;
+pub async fn list_my_pull_requests(state: State<'_, Session>) -> Result<Vec<PullRequest>, String> {
+    let token = state.token()?;
     let http = state.http();
 
     let response = http

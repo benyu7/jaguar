@@ -1,12 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-type DevicePrompt = {
-  user_code: string;
-  verification_uri: string;
-  expires_in: number;
-};
-
 type User = {
   login: string;
   name: string | null;
@@ -22,19 +16,12 @@ type PullRequest = {
   draft: boolean;
 };
 
-type AuthView = "signed-out" | "pending" | "signed-in";
-
-// The URL GitHub told us to send the user to, kept so "Open GitHub again"
-// works if they closed the tab.
-let verificationUri: string | null = null;
-
-function panel(view: AuthView): HTMLElement | null {
-  return document.querySelector(`#auth-${view}`);
-}
+const AUTH_VIEWS = ["checking", "signed-in", "unavailable"] as const;
+type AuthView = (typeof AUTH_VIEWS)[number];
 
 function showAuth(view: AuthView) {
-  for (const name of ["signed-out", "pending", "signed-in"] as AuthView[]) {
-    const el = panel(name);
+  for (const name of AUTH_VIEWS) {
+    const el = document.querySelector<HTMLElement>(`#auth-${name}`);
     if (el) el.hidden = name !== view;
   }
 
@@ -142,72 +129,28 @@ async function loadPullRequests() {
   }
 }
 
-async function openVerificationUri() {
-  if (!verificationUri) return;
-  try {
-    await openUrl(verificationUri);
-  } catch {
-    // A browser that refuses to launch is not fatal — the user can still
-    // reach github.com/login/device by hand while we keep polling.
-    showAuthError(`Could not open a browser. Go to ${verificationUri} yourself.`);
-  }
-}
-
-async function signIn() {
-  const button = document.querySelector<HTMLButtonElement>("#sign-in");
+/// There is no sign-in of our own to do — `gh` is either signed in or it is
+/// not, and the error says which and how to fix it. "Try again" re-asks, so a
+/// `gh auth login` in a terminal is picked up without restarting the app.
+async function identify() {
+  const button = document.querySelector<HTMLButtonElement>("#retry");
   if (button) button.disabled = true;
-  showAuthError(null);
+  showAuth("checking");
 
   try {
-    const prompt = await invoke<DevicePrompt>("start_device_auth");
-    verificationUri = prompt.verification_uri;
-
-    const code = document.querySelector("#user-code");
-    if (code) code.textContent = prompt.user_code;
-    showAuth("pending");
-
-    await openVerificationUri();
-
-    // Resolves only once GitHub gives a final answer, so this await is the
-    // whole polling loop.
-    showUser(await invoke<User>("complete_device_auth"));
+    showUser(await invoke<User>("current_user"));
   } catch (error) {
     showAuthError(String(error));
-    showAuth("signed-out");
+    showAuth("unavailable");
   } finally {
     if (button) button.disabled = false;
   }
 }
 
-async function signOut() {
-  await invoke("sign_out");
-  document.querySelector("#pr-list")?.replaceChildren();
-  showPrStatus(null);
-  showAuthError(null);
-  showAuth("signed-out");
-}
-
-async function restoreSession() {
-  // The token lives in the Rust process, backed by the OS credential store, so
-  // this recovers the session across both a webview reload and a restart. It
-  // returns null if the token has since been revoked.
-  try {
-    const user = await invoke<User | null>("current_user");
-    if (user) showUser(user);
-    else showAuth("signed-out");
-  } catch {
-    showAuth("signed-out");
-  }
-}
-
 window.addEventListener("DOMContentLoaded", () => {
-  document.querySelector("#sign-in")?.addEventListener("click", signIn);
-  document.querySelector("#sign-out")?.addEventListener("click", signOut);
-  document
-    .querySelector("#open-github")
-    ?.addEventListener("click", openVerificationUri);
+  document.querySelector("#retry")?.addEventListener("click", identify);
   document
     .querySelector("#refresh-prs")
     ?.addEventListener("click", loadPullRequests);
-  restoreSession();
+  identify();
 });

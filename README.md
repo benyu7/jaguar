@@ -7,23 +7,19 @@ A Tauri desktop app in vanilla HTML, CSS and TypeScript.
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
 
 ## Run
-- populate .env at ./src-tauri/.env
-    - CLIENT_ID: the client id of the github oauth application
+- install the [GitHub CLI](https://cli.github.com) and run `gh auth login`
 - pnpm install
 - pnpm tauri dev
 
 ## Details
 - Only Windows, MacOS, Linux
-- Sign-in asks for `read:user repo`. The `repo` scope is what lets the pull
-  request list see private repositories; GitHub OAuth apps offer no read-only
-  version of it, so this grants full repository access. A token stored before
-  the app asked for `repo` is discarded on the next launch and you are asked to
-  sign in again.
-- Private repositories owned by an organisation that restricts third-party
-  OAuth apps stay invisible until an org owner approves this app, even with the
-  `repo` scope granted.
-- The GitHub access token is kept in the OS credential store (Credential Manager
-  on Windows, Keychain on macOS, Secret Service on Linux) under `jaguar` /
-  `github-access-token`, so the sign-in survives a restart. "Sign out" deletes
-  it. If no credential store is available the app still runs — it just asks you
-  to sign in each time.
+- Authentication is the GitHub CLI's. jaguar shells out to `gh auth token` and
+  uses that credential, so it has no OAuth app of its own, stores no token, and
+  has no sign-in screen — `gh auth login` and `gh auth logout` are the sign-in
+  and sign-out. `gh` keeps its own credential in the OS keyring.
+- This is deliberate: an OAuth app of jaguar's own would need separate approval
+  from every organisation that restricts third-party apps, whereas `gh` has
+  generally been approved already.
+- The token needs the `repo` scope for private repositories to appear in the
+  pull request list. If it is missing, the app says so and gives you the fix
+  (`gh auth refresh -s repo`).

@@ -1,20 +1,14 @@
-mod github_auth;
+mod gh;
 mod pull_requests;
-mod token_store;
+mod session;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Loads src-tauri/.env when running under `tauri dev`; missing file is not an error.
-    dotenvy::dotenv().ok();
-
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .manage(github_auth::Auth::new())
+        .manage(session::Session::new())
         .invoke_handler(tauri::generate_handler![
-            github_auth::start_device_auth,
-            github_auth::complete_device_auth,
-            github_auth::current_user,
-            github_auth::sign_out,
+            session::current_user,
             pull_requests::list_my_pull_requests,
         ])
         .run(tauri::generate_context!())
