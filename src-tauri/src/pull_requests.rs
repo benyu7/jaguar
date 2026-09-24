@@ -8,6 +8,8 @@
 //! Search returns private repositories as well, provided the token carries the
 //! `repo` scope — see `REQUIRED_SCOPE` in [`crate::session`].
 
+use chrono::{DateTime, Utc};
+use chrono_humanize::HumanTime;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -43,7 +45,9 @@ pub struct PullRequest {
     title: String,
     url: String,
     repository: String,
-    updated_at: String,
+    /// Already worded — "3 hours ago" — rather than a timestamp for the
+    /// frontend to format.
+    updated: String,
     draft: bool,
 }
 
@@ -89,10 +93,20 @@ pub async fn list_my_pull_requests(state: State<'_, Session>) -> Result<Vec<Pull
             title: item.title,
             repository: repository_name(&item.repository_url),
             url: item.html_url,
-            updated_at: item.updated_at,
+            updated: relative_time(&item.updated_at),
             draft: item.draft,
         })
         .collect())
+}
+
+/// "3 hours ago" for a GitHub timestamp, in the largest unit that fits. A
+/// timestamp we cannot parse is passed through as it arrived rather than
+/// costing the caller the whole list.
+fn relative_time(timestamp: &str) -> String {
+    match DateTime::parse_from_rfc3339(timestamp) {
+        Ok(at) => HumanTime::from(at.with_timezone(&Utc) - Utc::now()).to_string(),
+        Err(_) => timestamp.to_string(),
+    }
 }
 
 /// `owner/repo` out of a repository API URL, falling back to the whole URL if

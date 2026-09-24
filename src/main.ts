@@ -12,7 +12,8 @@ type PullRequest = {
   title: string;
   url: string;
   repository: string;
-  updated_at: string;
+  /** Already worded by the backend — "3 hours ago". */
+  updated: string;
   draft: boolean;
 };
 
@@ -63,26 +64,6 @@ function showPrStatus(message: string | null) {
   el.hidden = message === null;
 }
 
-/** "3 hours ago" for a GitHub timestamp, in the largest unit that fits. */
-function relativeTime(timestamp: string): string {
-  const seconds = (Date.parse(timestamp) - Date.now()) / 1000;
-  const units: [Intl.RelativeTimeFormatUnit, number][] = [
-    ["year", 60 * 60 * 24 * 365],
-    ["month", 60 * 60 * 24 * 30],
-    ["day", 60 * 60 * 24],
-    ["hour", 60 * 60],
-    ["minute", 60],
-  ];
-  const format = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
-
-  for (const [unit, size] of units) {
-    if (Math.abs(seconds) >= size) {
-      return format.format(Math.round(seconds / size), unit);
-    }
-  }
-  return format.format(Math.round(seconds), "second");
-}
-
 function pullRequestRow(pr: PullRequest): HTMLTableRowElement {
   const row = document.createElement("tr");
   const title = document.createElement("td");
@@ -113,7 +94,7 @@ function pullRequestRow(pr: PullRequest): HTMLTableRowElement {
 
   const updated = document.createElement("td");
   const age = document.createElement("small");
-  age.textContent = relativeTime(pr.updated_at);
+  age.textContent = pr.updated;
   updated.append(age);
   row.append(updated);
 
