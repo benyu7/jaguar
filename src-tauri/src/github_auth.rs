@@ -69,6 +69,21 @@ impl Auth {
             token: Mutex::new(None),
         }
     }
+
+    /// The access token, if anyone is signed in. Lets other modules call the
+    /// API without the token ever leaving the Rust side.
+    pub fn token(&self) -> Result<Option<String>, String> {
+        Ok(self
+            .token
+            .lock()
+            .map_err(|_| "Sign-in state is unusable; restart the app.".to_string())?
+            .clone())
+    }
+
+    /// The shared HTTP client, so callers inherit the user agent GitHub wants.
+    pub fn http(&self) -> reqwest::Client {
+        self.http.clone()
+    }
 }
 
 fn client_id() -> Result<String, String> {

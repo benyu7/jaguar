@@ -1,4 +1,5 @@
 mod github_auth;
+mod pull_requests;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -13,6 +14,7 @@ pub fn run() {
             github_auth::complete_device_auth,
             github_auth::current_user,
             github_auth::sign_out,
+            pull_requests::list_my_pull_requests,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

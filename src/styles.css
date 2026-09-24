@@ -147,6 +147,68 @@ button.github:disabled {
   font-size: 0.875em;
 }
 
+/* The list reads as a column of text, so it opts out of the centred layout. */
+.prs {
+  width: min(42em, 100% - 2em);
+  margin: 0 auto 3em;
+  text-align: left;
+}
+
+.prs-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1em;
+}
+
+.prs-head h2 {
+  font-size: 1.1em;
+  margin: 0;
+}
+
+#refresh-prs {
+  padding: 0.35em 0.9em;
+  font-size: 0.875em;
+}
+
+.pr-list {
+  list-style: none;
+  margin: 0.75em 0 0;
+  padding: 0;
+}
+
+.pr {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 0.6em;
+  padding: 0.75em 0;
+  border-top: 1px solid #00000014;
+}
+
+.pr-title {
+  font-weight: 500;
+}
+
+.pr-title:hover {
+  text-decoration: underline;
+}
+
+.pr-meta {
+  grid-column: 1 / -1;
+  font-size: 0.8125em;
+  opacity: 0.7;
+}
+
+.pr-draft {
+  align-self: center;
+  font-size: 0.75em;
+  font-weight: 500;
+  padding: 0.1em 0.6em;
+  border-radius: 999px;
+  border: 1px solid #00000026;
+  opacity: 0.7;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
@@ -182,5 +244,13 @@ button.github:disabled {
 
   .auth-error {
     color: #ff8182;
+  }
+
+  .pr {
+    border-top-color: #ffffff1f;
+  }
+
+  .pr-draft {
+    border-color: #ffffff33;
   }
 }
