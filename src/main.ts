@@ -85,13 +85,6 @@ async function signIn() {
   }
 }
 
-async function signOut() {
-  await invoke("sign_out");
-  verificationUri = null;
-  showAuthError(null);
-  showAuth("signed-out");
-}
-
 async function restoreSession() {
   // The token lives in the Rust process, so it survives a webview reload even
   // though it does not survive a restart.
@@ -106,7 +99,6 @@ async function restoreSession() {
 
 window.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#sign-in")?.addEventListener("click", signIn);
-  document.querySelector("#sign-out")?.addEventListener("click", signOut);
   document
     .querySelector("#open-github")
     ?.addEventListener("click", openVerificationUri);

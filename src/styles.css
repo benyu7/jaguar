@@ -29,6 +29,19 @@
   align-self: center;
 }
 
+/* Hairline down the centre of the window, behind the content. */
+.vrule {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background-color: #ffffff;
+  z-index: -1;
+  pointer-events: none;
+}
+
 .row {
   display: flex;
   justify-content: center;
