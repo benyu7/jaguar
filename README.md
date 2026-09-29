@@ -12,6 +12,7 @@ A Tauri desktop app in vanilla HTML, CSS and TypeScript.
 - pnpm tauri dev
 - pnpm tauri build
 - ./src-tauri/target/release/jaguar
+- sudo apt install ./src-tauri/target/release/bundle/deb/Jaguar_0.1.0_amd64.deb
 
 ## Details
 - Windows, MacOS, Linux

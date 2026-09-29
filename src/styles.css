@@ -2,44 +2,6 @@
    so what is left here is only what is particular to this window. */
 @import "@picocss/pico/css/pico.min.css";
 
-.container {
-  padding-top: 8vh;
-}
-
-/* Hairline down the centre of the window, behind the content. */
-.vrule {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  transform: translateX(-50%);
-  background-color: var(--pico-muted-border-color);
-  z-index: -1;
-  pointer-events: none;
-}
-
-.auth {
-  text-align: center;
-  margin-bottom: var(--pico-block-spacing-vertical);
-}
-
-.auth > * {
-  margin-bottom: 0;
-}
-
-.hint {
-  font-size: 0.875em;
-  color: var(--pico-muted-color);
-}
-
-#auth-signed-in {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
 .avatar {
   width: 32px;
   height: 32px;

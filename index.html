@@ -9,16 +9,14 @@
   </head>
 
   <body>
-    <div class="vrule" aria-hidden="true"></div>
-
     <main class="container">
-      <section class="auth">
+      <section>
         <div id="auth-checking">
-          <p class="hint">Asking the GitHub CLI who you are…</p>
+          <p>Asking the GitHub CLI who you are…</p>
         </div>
 
         <div id="auth-signed-in" hidden>
-          <img class="avatar" id="avatar" alt="" />
+          <img id="avatar" alt="" />
           <span id="who"></span>
         </div>
 
@@ -29,22 +27,20 @@
       </section>
 
       <section id="prs" hidden>
-        <!-- Pico's nav is the heading-left/action-right row, and it gives a
-             button inside `nav li` the compact padding and no bottom margin. -->
         <nav>
           <ul>
             <li><h2>Your open pull requests</h2></li>
           </ul>
           <ul>
             <li>
-              <button type="button" class="secondary outline" id="refresh-prs">
+              <button id="refresh-prs">
                 Refresh
               </button>
             </li>
           </ul>
         </nav>
 
-        <p class="hint" id="prs-status" hidden></p>
+        <p id="prs-status" hidden></p>
 
         <!-- A table rather than a list: Pico rules the rows and aligns the
              columns without any styling of ours. -->
