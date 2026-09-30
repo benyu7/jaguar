@@ -1,7 +1,7 @@
 # Jaguar
 
 A Tauri desktop app in vanilla HTML, CSS and TypeScript.
-- Pico CSS
+- Web Awesome
 
 ## Prerequisites
 - gh cli

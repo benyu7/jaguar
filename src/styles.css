@@ -1,9 +1,3 @@
-/* Pico supplies the element styling, the light/dark palette and the container,
-   so what is left here is only what is particular to this window. */
-@import "@picocss/pico/css/pico.min.css";
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+main {
+  padding: var(--wa-space-l);
 }

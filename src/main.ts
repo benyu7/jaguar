@@ -1,5 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import "@awesome.me/webawesome/dist/styles/webawesome.css";
+import "@awesome.me/webawesome/dist/components/avatar/avatar.js";
+import "@awesome.me/webawesome/dist/components/badge/badge.js";
+import "@awesome.me/webawesome/dist/components/button/button.js";
+import type WaAvatar from "@awesome.me/webawesome/dist/components/avatar/avatar.js";
+import type WaButton from "@awesome.me/webawesome/dist/components/button/button.js";
 
 type User = {
   login: string;
@@ -46,11 +52,11 @@ function showAuthError(message: string | null) {
 }
 
 function showUser(user: User) {
-  const avatar = document.querySelector<HTMLImageElement>("#avatar");
+  const avatar = document.querySelector<WaAvatar>("#avatar");
   const who = document.querySelector("#who");
   if (avatar) {
-    avatar.src = user.avatar_url;
-    avatar.alt = `${user.login}'s avatar`;
+    avatar.image = user.avatar_url;
+    avatar.label = `${user.login}'s avatar`;
   }
   if (who) who.textContent = user.name ?? user.login;
   showAuth("signed-in");
@@ -81,9 +87,9 @@ function pullRequestRow(pr: PullRequest): HTMLTableRowElement {
   title.append(link);
 
   if (pr.draft) {
-    // Pico gives <mark> a padded, highlighted face — a badge without a class.
-    const draft = document.createElement("mark");
+    const draft = document.createElement("wa-badge");
     draft.textContent = "Draft";
+    draft.setAttribute("variant", "neutral");
     title.append(" ", draft);
   }
 
@@ -105,7 +111,7 @@ async function loadPullRequests() {
   const section = document.querySelector<HTMLElement>("#prs");
   const table = document.querySelector<HTMLTableElement>("#pr-table");
   const list = document.querySelector<HTMLTableSectionElement>("#pr-list");
-  const refresh = document.querySelector<HTMLButtonElement>("#refresh-prs");
+  const refresh = document.querySelector<WaButton>("#refresh-prs");
   if (!section || !list) return;
 
   section.hidden = false;
@@ -131,7 +137,7 @@ async function loadPullRequests() {
 /// not, and the error says which and how to fix it. "Try again" re-asks, so a
 /// `gh auth login` in a terminal is picked up without restarting the app.
 async function identify() {
-  const button = document.querySelector<HTMLButtonElement>("#retry");
+  const button = document.querySelector<WaButton>("#retry");
   if (button) button.disabled = true;
   showAuth("checking");
 

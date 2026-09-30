@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="wa-theme-default wa-dark wa-palette-default">
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
@@ -8,43 +8,35 @@
     <script type="module" src="/src/main.ts" defer></script>
   </head>
 
-  <body>
-    <main class="container">
+  <body class="wa-stack">
+    <main class="wa-stack">
       <section>
         <div id="auth-checking">
           <p>Asking the GitHub CLI who you are…</p>
         </div>
 
-        <div id="auth-signed-in" hidden>
-          <img id="avatar" alt="" />
+        <div id="auth-signed-in" class="wa-cluster wa-justify-content-center" hidden>
+          <wa-avatar id="avatar"></wa-avatar>
           <span id="who"></span>
         </div>
 
         <div id="auth-unavailable" hidden>
           <p id="auth-error"></p>
-          <button type="button" class="secondary" id="retry">Try again</button>
+          <wa-button id="retry" variant="neutral" appearance="filled">Try again</wa-button>
         </div>
       </section>
 
       <section id="prs" hidden>
-        <nav>
-          <ul>
-            <li><h2>Your open pull requests</h2></li>
-          </ul>
-          <ul>
-            <li>
-              <button id="refresh-prs">
-                Refresh
-              </button>
-            </li>
-          </ul>
-        </nav>
+        <div class="wa-split">
+          <h3>Your open pull requests</h3>
+          <wa-button id="refresh-prs" variant="brand">Refresh</wa-button>
+        </div>
 
         <p id="prs-status" hidden></p>
 
-        <!-- A table rather than a list: Pico rules the rows and aligns the
-             columns without any styling of ours. -->
-        <table id="pr-table" hidden>
+        <!-- A table rather than a list: Web Awesome's native styles rule the
+             rows and align the columns without any styling of ours. -->
+        <table id="pr-table" class="wa-hover-rows" hidden>
           <thead>
             <tr>
               <th scope="col">Pull request</th>
