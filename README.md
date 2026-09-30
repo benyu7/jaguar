@@ -1,7 +1,7 @@
 # Jaguar
 
-A Tauri desktop app in vanilla HTML, CSS and TypeScript.
-- Web Awesome
+A Tauri desktop app in React, CSS and TypeScript.
+- shadcn/ui
 
 ## Prerequisites
 - gh cli
