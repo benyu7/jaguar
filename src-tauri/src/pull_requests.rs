@@ -47,7 +47,8 @@ pub struct PullRequest {
     repository: String,
     /// Already worded — "3 hours ago" — rather than a timestamp for the
     /// frontend to format.
-    updated: String,
+    #[serde(rename = "updatedAgo")]
+    updated_ago: String,
     draft: bool,
 }
 
@@ -93,7 +94,7 @@ pub async fn list_my_pull_requests(state: State<'_, Session>) -> Result<Vec<Pull
             title: item.title,
             repository: repository_name(&item.repository_url),
             url: item.html_url,
-            updated: relative_time(&item.updated_at),
+            updated_ago: relative_time(&item.updated_at),
             draft: item.draft,
         })
         .collect())

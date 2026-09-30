@@ -25,7 +25,7 @@ type PullRequest = {
   url: string;
   repository: string;
   /** Already worded by the backend — "3 hours ago". */
-  updated: string;
+  updatedAgo: string;
   draft: boolean;
 };
 
@@ -87,7 +87,7 @@ function PullRequestRow({
           {pr.repository} #{pr.number}
         </p>
       </TableCell>
-      <TableCell className="text-muted-foreground">{pr.updated}</TableCell>
+      <TableCell className="text-muted-foreground">{pr.updatedAgo}</TableCell>
     </TableRow>
   );
 }
