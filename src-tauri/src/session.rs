@@ -97,5 +97,7 @@ fn scopes_are_sufficient(headers: &reqwest::header::HeaderMap) -> bool {
     let Some(granted) = headers.get("x-oauth-scopes").and_then(|v| v.to_str().ok()) else {
         return true;
     };
-    granted.split(',').any(|scope| scope.trim() == REQUIRED_SCOPE)
+    granted
+        .split(',')
+        .any(|scope| scope.trim() == REQUIRED_SCOPE)
 }

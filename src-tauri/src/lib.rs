@@ -1,4 +1,5 @@
 mod gh;
+mod github;
 mod pull_requests;
 mod session;
 

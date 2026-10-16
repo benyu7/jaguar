@@ -26,7 +26,32 @@ type PullRequest = {
   repository: string;
   /** Already worded by the backend — "3 hours ago". */
   updatedAgo: string;
-  draft: boolean;
+  /** GitHub's merge verdict, already reduced to the states we show. */
+  mergeStatus: MergeStatus;
+};
+
+type MergeStatus =
+  | "ready"
+  | "blocked"
+  | "conflicts"
+  | "behind"
+  | "checks"
+  | "draft"
+  | "pending"
+  | "unknown";
+
+const MERGE_STATUS: Record<
+  MergeStatus,
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+> = {
+  ready: { label: "Ready to merge", variant: "default" },
+  blocked: { label: "Blocked", variant: "destructive" },
+  conflicts: { label: "Conflicts", variant: "destructive" },
+  behind: { label: "Behind", variant: "secondary" },
+  checks: { label: "Checks not passing", variant: "destructive" },
+  draft: { label: "Draft", variant: "secondary" },
+  pending: { label: "Pending", variant: "secondary" },
+  unknown: { label: "Unknown", variant: "outline" },
 };
 
 type AuthState =
@@ -67,25 +92,27 @@ function PullRequestRow({
   return (
     <TableRow>
       <TableCell className="whitespace-normal">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* A plain href would navigate the webview itself, so the click handler
-              sends it to the real browser instead; the href is still there so the
-              link reads as one and shows its target on hover. */}
-          <a
-            href={pr.url}
-            className="underline-offset-4 hover:underline"
-            onClick={(event) => {
-              event.preventDefault();
-              openUrl(pr.url).catch(onOpenFailed);
-            }}
-          >
-            {pr.title}
-          </a>
-          {pr.draft && <Badge variant="secondary">Draft</Badge>}
-        </div>
+        {/* A plain href would navigate the webview itself, so the click handler
+            sends it to the real browser instead; the href is still there so the
+            link reads as one and shows its target on hover. */}
+        <a
+          href={pr.url}
+          className="underline-offset-4 hover:underline"
+          onClick={(event) => {
+            event.preventDefault();
+            openUrl(pr.url).catch(onOpenFailed);
+          }}
+        >
+          {pr.title}
+        </a>
         <p className="text-xs text-muted-foreground">
           {pr.repository} #{pr.number}
         </p>
+      </TableCell>
+      <TableCell>
+        <Badge variant={MERGE_STATUS[pr.mergeStatus].variant}>
+          {MERGE_STATUS[pr.mergeStatus].label}
+        </Badge>
       </TableCell>
       <TableCell className="text-muted-foreground">{pr.updatedAgo}</TableCell>
     </TableRow>
@@ -181,6 +208,7 @@ export function App() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Pull request</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Updated</TableHead>
                 </TableRow>
               </TableHeader>
